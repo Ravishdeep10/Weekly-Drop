@@ -90,6 +90,7 @@ THIRD_PARTY_APPS = [
 ]
 LOCAL_APPS = [
     'weekly_drop.users.apps.UsersAppConfig',
+    'trendingAlbums'
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
