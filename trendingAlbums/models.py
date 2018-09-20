@@ -1,7 +1,10 @@
 # Create your models here.
 import praw
+import spotipy
 import datetime as dt
 import pandas as pd
+
+from spotipy.oauth2 import SpotifyClientCredentials
 
 from django.db import models
 from django.utils import timezone
@@ -35,10 +38,18 @@ class redditPost(TimeStampedModel):
     comms_numm = models.IntegerField()
     timestamp = models.DateTimeField()
 
+class spotifyAlbum(TimeStampedModel):
+    artist = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
+    release = models.DateTimeField()
+    url = models.CharField(max_length=200)
+    uri = models.CharField(max_length=200)
+    image_url = models.CharField(max_length=200)
 
 
 
 
+### Functions relating to redditPost
 
 def getRedditObjects():
     if readyToUpdate():
@@ -138,3 +149,71 @@ def getNextThursday(latest_date):
     latest_date = latest_date.replace(hour=21, minute=15, second=0, microsecond=0)
 
     return latest_date
+
+
+
+def getDateTime(str_time):
+    return pd.to_datetime(str_time).date()
+
+def checkCorrectAlbum(album, title, spotifyclient):
+    album_spotify = spotifyclient.search(q='album:' + title, type='album')['albums']
+
+    if album_spotify['total'] == 0:
+        return False
+
+    #print("Latest Album Search: ", album_spotify['items'][0])
+    album_id_1 = album_spotify['items'][0]['artists'][0]['id']
+
+    album_id_2 = album['artists'][0]['id']
+
+    return album_id_1 == album_id_2
+
+
+def getSpotifyAlbums():
+    trending = getRedditObjects()
+    spotifyAlbum.objects.all().delete()
+
+    for album in trending:
+        convertRedditSpotify(album)
+
+
+def convertRedditSpotify(album):
+
+    client_credentials_manager = SpotifyClientCredentials(client_id=get_secret("SPOTIFY_CLIENT_ID"),
+                                                          client_secret=get_secret("SPOTIFY_CLIENT_SECRET"))
+    spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+
+    name = getattr(album, 'title')
+
+    if checkFreshSingle(name):
+        [artist, title] = name[8:].split(' - ')
+        type = 'single'
+    elif checkFreshAlbum(name):
+        [artist, title] = name[14:].split(' - ')
+        type = 'album'
+
+    print("Title: ", title)
+    artist_spotify = spotify.search(q='artist:' + artist, type='artist')['artists']
+
+    if artist_spotify['total'] == 0:
+        return
+
+    id = artist_spotify['items'][0]['id']
+
+    artist_albums = spotify.artist_albums(id, album_type=type)['items']
+
+    #Check if the artist has any albums at all
+    if artist_albums == []:
+        return
+
+    latest_album = artist_albums[0]
+    print("Latest Album: ", latest_album)
+
+    if checkCorrectAlbum(latest_album, title.strip(), spotify):
+        spotifyAlbum(artist=artist, name=latest_album['name'], release=getDateTime(latest_album['release_date']),
+                     url=latest_album['external_urls']['spotify'], uri=latest_album['uri'],
+                     image_url=latest_album['images'][0]['url']).save()
+
+
+
+
