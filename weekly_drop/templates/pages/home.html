@@ -1,1 +1,51 @@
 {% extends "base.html" %}
+
+{% block content %}
+  <section class="main">
+    <h2><b>New Albums of the week</b></h2>
+    <ul class="list-group">
+      {% for album in albums %}
+        <li class="list-group-item">
+        <h3>{{ album.name }} - {{ album.artist }}</h3>
+        <br>
+          <div class="container">
+            <div class="row">
+              <div class="col-md-5">
+                <img src={{ album.image_url }}>
+              </div>
+              <div class="col-md-5">
+                <iframe src="{{ album.url }}" width="300" height="300"
+                frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+              </div>
+
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <h2><b>New Singles of the week</b></h2>
+    <ul class="list-group">
+      {% for single in singles %}
+        <li class="list-group-item">
+        <h3>{{ single.name }} - {{ single.artist }}</h3>
+        <br>
+          <div class="container">
+            <div class="row">
+              <div class="col-md-5">
+                <img src={{ single.image_url }}>
+              </div>
+              <div class="col-md-5">
+                <iframe src="{{ single.url }}" width="300" height="300"
+                frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+              </div>
+
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+
+{% endblock %}

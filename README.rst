@@ -1,12 +1,14 @@
 weeklydrop
 ==========
 
-Web app that tracks new hip hop album releases every week.
+Web app that tracks new hip hop album releases every week. Using the unique tastes of the /r/hiphopheads subreddit, I used the reddit api to track the hottest albums, singles and extended plays talked about on the subreddit after their initial release. When the website loads it will takes the information from those reddit posts and turn them into a class of spotify objects created using the Spotify Web API and plamere's spotipy python library. The resulting display is an updated selection of albums every Thursday at 9:00 pm pacific time along with a spotify play button in order to start listening to each project. This application was made because as an avid hip hop fan I would wait Thirsday night and scrape reddit to find what the new releases were, but now this application automates this process for me.
 
 .. image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg
      :target: https://github.com/pydanny/cookiecutter-django/
      :alt: Built with Cookiecutter Django
 
+![Alt text](/weekly_drop/docs/images/Screen_Shot_1_2018_09_20.png?raw=true "Optional Title")
+![Alt text](/weekly_drop/docs/images/Screen_Shot_2_2018_09_20.png?raw=true "Optional Title")
 
 Settings
 --------
@@ -60,16 +62,6 @@ Live reloading and Sass CSS compilation
 Moved to `Live reloading and SASS compilation`_.
 
 .. _`Live reloading and SASS compilation`: http://cookiecutter-django.readthedocs.io/en/latest/live-reloading-and-sass-compilation.html
-
-
-
-
-
-Deployment
-----------
-
-The following details how to deploy this application.
-
 
 
 

@@ -45,6 +45,10 @@ class spotifyAlbum(TimeStampedModel):
     url = models.CharField(max_length=200)
     uri = models.CharField(max_length=200)
     image_url = models.CharField(max_length=200)
+    album_type = models.CharField(max_length=200)
+
+    def get_url(self):
+        return self.url
 
 
 
@@ -73,10 +77,13 @@ def filterFreshOnly(topics_data):
     return topics_data[mask]
 
 def checkFresh(title):
-    return checkFreshSingle(title) or checkFreshAlbum(title)
+    return checkFreshSingle(title) or checkFreshEP(title) or checkFreshAlbum(title)
 
 def checkFreshSingle(title):
     return title[:7] == "[FRESH]"
+
+def checkFreshEP(title):
+    return title[:10] == "[FRESH EP]"
 
 def checkFreshAlbum(title):
     return title[:13] == "[FRESH ALBUM]"
@@ -162,11 +169,11 @@ def checkCorrectAlbum(album, title, spotifyclient):
         return False
 
     #print("Latest Album Search: ", album_spotify['items'][0])
-    album_id_1 = album_spotify['items'][0]['artists'][0]['id']
+    #album_id_1 = album_spotify['items'][0]['artists'][0]['id']
 
-    album_id_2 = album['artists'][0]['id']
+    #album_id_2 = album['artists'][0]['id']
 
-    return album_id_1 == album_id_2
+    return getDateTime(album['release_date']).weekday() == 4
 
 
 def getSpotifyAlbums():
@@ -186,13 +193,20 @@ def convertRedditSpotify(album):
     name = getattr(album, 'title')
 
     if checkFreshSingle(name):
-        [artist, title] = name[8:].split(' - ')
+        seperate = name[8:].split(' - ')
         type = 'single'
+
+    elif checkFreshEP(name):
+        seperate = name[11:].split(' - ')
+        type= 'single'
     elif checkFreshAlbum(name):
-        [artist, title] = name[14:].split(' - ')
+        seperate = name[14:].split(' - ')
         type = 'album'
 
-    print("Title: ", title)
+    if len(seperate) != 2:
+        return
+    [artist, title] = seperate
+
     artist_spotify = spotify.search(q='artist:' + artist, type='artist')['artists']
 
     if artist_spotify['total'] == 0:
@@ -207,13 +221,10 @@ def convertRedditSpotify(album):
         return
 
     latest_album = artist_albums[0]
-    print("Latest Album: ", latest_album)
 
     if checkCorrectAlbum(latest_album, title.strip(), spotify):
+        url = "https://open.spotify.com/embed/album/" + latest_album['uri'].split(':')[-1]
         spotifyAlbum(artist=artist, name=latest_album['name'], release=getDateTime(latest_album['release_date']),
-                     url=latest_album['external_urls']['spotify'], uri=latest_album['uri'],
-                     image_url=latest_album['images'][0]['url']).save()
-
-
-
+                     url=url, uri=latest_album['uri'],
+                     image_url=latest_album['images'][1]['url'], album_type=latest_album['album_type']).save()
 
