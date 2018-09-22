@@ -8,6 +8,12 @@ class AlbumView(ListView):
     model = spotifyAlbum
 
     def get_context_data(self, **kwargs):
+        '''
+        Edit the context data by having two different querysets
+            for albums and singles. Before we check if the new
+            releases are ready for the week and get the new
+            Spotify releases.
+        '''
         if readyToUpdate():
             getSpotifyAlbums()
         context_data = super(AlbumView, self).get_context_data(**kwargs)
